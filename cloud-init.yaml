@@ -1,0 +1,36 @@
+#cloud-config
+
+users:
+  - name: mindful_user
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    hashed_passwd: "$6$rounds=4096$s9ZQkQ.mGxqf7x7r$ytKPcvh3RCjJ7Q/tEjKVXYyg2W96BmjfQ/o4vSlAN.jc.UpCi1pGTH0wRrRsw3gR0ASPRiBxR8L7/nRtFZiw31"
+    ssh_authorized_keys:
+      - <your pubkey>
+
+# Install packages
+packages:
+  - htop
+  - tmux
+  - vim
+  - python3-pip
+  - podman
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+# Modify the Docker registries
+# Does not work, module is not executed by cloud init?
+#write_files:
+#  - content: |
+#      unqualified-search-registries = ["registry.ipv6.docker.com"]
+#      short-name-mode="enforcing"
+#    path: '/etc/containers/registries.conf'
+#    owner: 'root:root'
+#    permissions: '0644'
+#    defer: true
+
+runcmd:
+  - ["modprobe", "ip_tables"]
+  - echo -e 'unqualified-search-registries = ["registry.ipv6.docker.com"]\nshort-name-mode="enforcing"' > /etc/containers/registries.conf
+  - ["python3", "-m", "pip", "install", "https://github.com/containers/podman-compose/archive/devel.tar.gz"]
